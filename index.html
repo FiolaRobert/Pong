@@ -1,0 +1,31 @@
+<HTML>
+<HEAD>
+<TITLE>Play Ping Pong</TITLE>
+<style>
+body {
+	display: flex;
+	align-items: center;
+	background: #202020;
+	margin: 0;
+}
+canvas {
+	border: solid 10px #fff;
+	border-left: none;
+	border-right: none;
+	image-rendering: pixelated;
+	height: 90%;
+	width: 90%;
+	margin: 0 auto;
+}
+</style>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+<p><label><input type="radio" class="difficulty" name="difficulty" value="easy" checked="checked" />Easy</label></p>
+<p><label><input type="radio" class="difficulty" name="difficulty" value="medium" />Medium</label></p>
+<p><label><input type="radio" class="difficulty" name="difficulty" value="hard" />Hard</label></p>
+<p><label><input type="radio" class="difficulty" name="difficulty" value="impossible" />Impossible</label></p>
+<canvas id='pong' width='600' height='300'/></canvas>
+<script type="text/javascript" src='pingpong.js'></script>
+
+</BODY>
+</HTML>
