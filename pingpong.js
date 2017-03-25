@@ -55,7 +55,7 @@ class Player extends Rect
 {
 	constructor()
 	{
-		super(20,50);
+		super(15,50);
 		this.vel = new Vec;
 		this.score=0;
 		this._lastPos=new Vec;
@@ -69,6 +69,8 @@ class Player extends Rect
     reset(y)
     {
     	this.pos.y=y;
+    	this.vel.x=0;
+    	this.vel.y=0;
     }
 }
 class Pong{
@@ -79,9 +81,12 @@ class Pong{
 		this.initialSpeed=250;
 		this.velX=0;
 		this.velY=0;
-		this.aiSpeed=2;
+		this.aiSpeed=1;
 		this.activeAI=true;
 		this.difficulty=0;
+
+		this._accumulator=0;
+		this.step=1/120;
 
 		this.ball=new Ball;
 		
@@ -90,14 +95,16 @@ class Pong{
 		new Player,
 		new Player,
 		];
-
+		
 		
 
 		let lastTime;
+		
 		this.callback =(millis)=> {
 			if(lastTime)
 			{
 				this.update((millis-lastTime)/1000);
+				this.draw();
 			}
 			lastTime=millis;
 			requestAnimationFrame(this.callback);
@@ -132,40 +139,59 @@ class Pong{
 		});
 		this.reset();
 	}
+	
+
+	
+
 	collide(player, ball)
 	{
 
 		if(player.left<ball.right && player.right>ball.left && 
 			player.top<ball.bottom && player.bottom>ball.top)
 		{
-			if(player.top<ball.bottom && player.bottom>ball.top)//has glitch of shooting vertically and getting stuck
-			{
-			
-				this.velX =-ball.vel.x*1.05;
+			if(player.top<ball.bottom && player.bottom>ball.top)
+			{//has glitch of shooting vertically and getting stuck
+				ball.pos.x-=ball.vel.x*this.step;
+				this.velX = -ball.vel.x*1.05 + player.vel.y*0.2;
 				ball.vel.x=this.velX;
-				var len=ball.vel.len;
-				this.velY+=player.vel.y*.2;
+				//var len=ball.vel.len;
+				this.velY+=player.vel.y*0.2;
 				ball.vel.y+=this.velY;
-				ball.vel.len=len;
+				//ball.vel.len=len;
+				if(ball.vel.x>0 && ball.vel.x<this.initialSpeed)
+				{
+					this.velX=this.initialSpeed;
+					ball.vel.x=this.velX;
+				}
+				else if(ball.vel.x<0 && ball.vel.x<-this.initialSpeed)
+				{
+					this.velX=-this.initialSpeed;
+					ball.vel.x=-this.velX;
+				}
 			}
-			else
+			else 
 			{
 				this.velX =ball.vel.x*1.05;
 				ball.vel.x=this.velX;
-				var len=ball.vel.len;
+				//var len=ball.vel.len;
 				this.velY+=player.vel.y;
 				ball.vel.y+=this.velY;
-				ball.vel.len=len;
+				//ball.vel.len=len;
+				
 			}
+			this.sound("hit");
 		}
 	}
+
 	draw()
 	{
 		this._context.fillStyle='#055';
 		this._context.fillRect(0,0, 
 			this._canvas.width, this._canvas.height);
 		this.drawRect(this.ball);
-		this. players.forEach(player=>this.drawRect(player));
+		this.players.forEach(player=>{
+			this.drawRect(player);
+		});
 		this.drawScore();
 	}
 	drawRect(rect)
@@ -223,6 +249,7 @@ class Pong{
 		
 
 	}
+
 	play()
 	{
 		const b=this.ball;
@@ -236,6 +263,7 @@ class Pong{
 				b.vel.x=this.velX;
 				b.vel.y=this.velY;
 				b.vel.len=this.initialSpeed;
+
 			}
 			else
 			{
@@ -249,9 +277,9 @@ class Pong{
 		{
 			b.vel.x=0;
 			b.vel.y=0;
-			
 		}
 	}
+
 	reset()
 	{
 		this.ball.pos.x=this._canvas.width/2;
@@ -260,14 +288,17 @@ class Pong{
 		this.ball.vel.y=0;
 		this.players[0].pos.x=40;
 		this.players[1].pos.x=this._canvas.width-40;
-		this.players.forEach(player=>{
-			player.reset(this._canvas.height/2) 
+		this.players.forEach(player=>
+		{
+			player.reset(this._canvas.height/2) ;
 		});
 	}
+
 	setDifficulty(difficulties)
 	{
 		var difficulty=0;
-		for (var i = difficulties.length - 1; i >= 0; i--) {
+		for (var i = difficulties.length - 1; i >= 0; i--) 
+		{
 			if(difficulties[i].checked)
 			{
 				difficulty=i;
@@ -276,21 +307,41 @@ class Pong{
 		}
 		switch(difficulty)
 		{
-			case 0: this.aiSpeed=2;break;
-			case 1: this.aiSpeed=3;break;
-			case 2: this.aiSpeed=4;break;
-			case 3: this.aiSpeed=5;break;
-			default: this.aiSpeed=2;break;
+			case 0: this.aiSpeed=1;break;
+			case 1: this.aiSpeed=2;break;
+			case 2: this.aiSpeed=3;break;
+			case 3: this.aiSpeed=4;break;
+			default: this.aiSpeed=10;break;
 
 		}
 		
 	}
+
+	sound(event)
+	{
+		var index=-1;
+		const options=["win", "lose", "hit", "wall", "miss", "score"];
+		for (var i = 0; i < options.length; i++) 
+		{
+			if(options[i]==event)
+			{
+				index=i;
+			}
+		}
+		if(index!==-1)
+		{
+			var audio=new Audio(document.getElementById(options[index]).src);
+		}
+		audio.play();
+	}
+
 	start()
 	{
 		
 		requestAnimationFrame(this.callback);
 	}
-	update(dt)
+
+	simulate(dt)
 	{
 		const vel=this.ball.vel;
 		this.ball.pos.x+=vel.x*dt;
@@ -302,6 +353,13 @@ class Pong{
 		}
 		if(this.ball.left<0 || this.ball.right>this._canvas.width)
 		{
+			if(this.ball.left<0){
+				this.sound("miss");
+			}
+			else if(this.ball.right>this._canvas.width)
+			{
+				this.sound("score");
+			}
 
 			const playerId=vel.x<0|0;
 			const player =this.players[playerId];
@@ -312,11 +370,14 @@ class Pong{
 
 				if(playerId===0)
 				{
-					alert('Player One Wins');	
+					this.sound("win");
+					window.setTimeout(function(){alert('Player One Wins')},1500);
+
 				}
 				else if(playerId===1)
 				{
-					alert('Player Two Wins');
+					this.sound("lose");
+					window.setTimeout(function(){alert('Player Two Wins')},1000);
 				}
 				this.players.forEach(player =>{
 					player.score=0;
@@ -329,27 +390,36 @@ class Pong{
 		{
 			this.ball.pos.y=this.ball.bottom;
 				vel.y=-vel.y+1;
+			this.sound("wall");
 			
 		}
 		else if(this.ball.bottom>this._canvas.height)
 		{
 			this.ball.pos.y=this.ball.top;
 			vel.y=-vel.y+1;
+			this.sound("wall");
 		}
 		
-		this.players.forEach(player => {
+		this.players.forEach(player =>{
 			player.update(dt);
 			this.collide(player, this.ball);
-
 		});
 		
-		this.draw();
+	}
+
+	update(dt)
+	{
+		this._accumulator+= dt;
+		while (this._accumulator>this.step)
+		{
+			this.simulate(this.step);
+			this._accumulator-=this.step;
+		}
 	}
 	
 }
-
-
 const canvas=document.getElementById('pong');
+canvas.style.position="center";
 const pong=new Pong(canvas);
 const difficulties=document.getElementsByClassName('difficulty');
 canvas.addEventListener('mousemove',event =>
@@ -376,3 +446,4 @@ function checkKey(e) {
 
 }
 pong.start();
+
