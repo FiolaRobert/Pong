@@ -1,5 +1,5 @@
 This is a web based javascript game based on the classic Pong game.
-Open the site here: <a href:"https://fiolarobert.github.io/Pong/">Pong</a>
+Open the site here: <a href="https://fiolarobert.github.io/Pong/">Pong</a>
 
 inspired by Codetrain.
 
