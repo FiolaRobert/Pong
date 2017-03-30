@@ -8,3 +8,12 @@ Future updates include:
 2-list of high scores ranking of all time
 3-multiplayer online connectivity
 4-update graphics
+
+Controls:
+W-Player 1 move up
+S-Player 1 move up
+UpArrow-Player 2 move up
+DownArrow-Player 2 move up
+Esc-reset ball position
+Enter-Pause/Play
+when selecting a new difficulty or number of players you must press ESC to reset
