@@ -1,89 +1,17 @@
-class Vec
-{
- constructor(x=0,y=0)
- {
-	this.x=x;
-	this.y=y; 	
-
- }
- get len()
- {
- 	return Math.sqrt(this.x*this.x+this.y*this.y);
- }
- set len(value)
- {
- 	const fact=value/this.len;
- 	this.x*=fact;
- 	this.y*=fact;
- }
-
-}
-class Rect 
-{
-	constructor(w,h)
-	{
-		this.pos=new Vec;
-		this.size=new Vec(w,h);
-
-	}
-	get left()
-	{
-		return this.pos.x - this. size.x/2;
-	}
-	get right()
-	{
-		return this.pos.x + this. size.x/2;
-	}
-	get top()
-	{
-		return this.pos.y - this. size.y/2;
-	}
-	get bottom()
-	{
-		return this.pos.y + this. size.y/2;
-	}
-}
-class Ball extends Rect 
-{
-	constructor()
-	{
-		super(10,10);
-		this.vel=new Vec;
-	}
-}
-class Player extends Rect
-{
-	constructor()
-	{
-		super(15,50);
-		this.vel = new Vec;
-		this.score=0;
-		this._lastPos=new Vec;
-
-	}
-	update(dt)
-    {
-        this.vel.y = (this.pos.y - this._lastPos.y) / dt;
-        this._lastPos.y = this.pos.y;
-    }
-    reset(y)
-    {
-    	this.pos.y=y;
-    	this.vel.x=0;
-    	this.vel.y=0;
-    }
-}
 class Pong{
 	constructor(canvas)
 	{
 		this._canvas=canvas;
 		this._context=canvas.getContext('2d');
+		
 		this.initialSpeed=250;
 		this.velX=0;
 		this.velY=0;
 		this.aiSpeed=1;
 		this.activeAI=true;
 		this.difficulty=0;
+		this.vs;
+		this.isPaused=true;
 
 		this._accumulator=0;
 		this.step=1/120;
@@ -95,8 +23,7 @@ class Pong{
 		new Player,
 		new Player,
 		];
-		
-		
+		this.drawPoints();
 
 		let lastTime;
 		
@@ -104,6 +31,7 @@ class Pong{
 			if(lastTime)
 			{
 				this.update((millis-lastTime)/1000);
+				this.drawPoints();
 				this.draw();
 			}
 			lastTime=millis;
@@ -138,51 +66,81 @@ class Pong{
 			return canvas;
 		});
 		this.reset();
+	
+	}
+
+	keyCommand(event)
+	{
+		if(event.keyCode=='87')//W key
+		{
+			
+			this.movePlayer(this.players[0], -1);
+			
+
+		}
+		else if(event.keyCode=='83')//S key
+		{
+			
+			this.movePlayer(this.players[0], 1);
+			
+		}
+
+		if(!this.activeAI)//2 player mode
+		{
+			if(event.keyCode=='38')//up key
+			{
+				
+				this.movePlayer(this.players[1], -1);
+			
+			}else if(event.keyCode=='40')//down key
+			{
+				
+				this.movePlayer(this.players[1], 1);
+				
+			}
+		}
+		
+		
 	}
 	
 
 	
-
+//bounce when ball hits players
 	collide(player, ball)
 	{
 
-		if(player.left<ball.right && player.right>ball.left && 
-			player.top<ball.bottom && player.bottom>ball.top)
+		if(player.left<ball.right && 
+			player.right>ball.left && 
+			player.top<ball.bottom && 
+			player.bottom>ball.top)
 		{
-			if(player.top<ball.bottom && player.bottom>ball.top)
-			{//has glitch of shooting vertically and getting stuck
+			//console.log(player.vel.y+", "+ this.velX+", "+ this.velY)
+			player.hit(this.aiSpeed);
+			//has glitch of shooting vertically and getting stuck
 				ball.pos.x-=ball.vel.x*this.step;
-				this.velX = -ball.vel.x*1.05 + player.vel.y*0.2;
+				this.velX = -ball.vel.x *1.05;//+ player.vel.y*0.2
 				ball.vel.x=this.velX;
-				//var len=ball.vel.len;
-				this.velY+=player.vel.y*0.2;
-				ball.vel.y+=this.velY;
-				//ball.vel.len=len;
+				var len=ball.vel.len;
+				this.velY=this.ball.vel.y+player.vel.y*0.5;
+				ball.vel.y=this.velY;
+				ball.vel.len=len;
+
+				//minimum ball speed
 				if(ball.vel.x>0 && ball.vel.x<this.initialSpeed)
 				{
 					this.velX=this.initialSpeed;
 					ball.vel.x=this.velX;
 				}
-				else if(ball.vel.x<0 && ball.vel.x<-this.initialSpeed)
+				else if(ball.vel.x<0 && ball.vel.x>-this.initialSpeed)
 				{
 					this.velX=-this.initialSpeed;
-					ball.vel.x=-this.velX;
+					ball.vel.x=this.velX;
 				}
-			}
-			else 
-			{
-				this.velX =ball.vel.x*1.05;
-				ball.vel.x=this.velX;
-				//var len=ball.vel.len;
-				this.velY+=player.vel.y;
-				ball.vel.y+=this.velY;
-				//ball.vel.len=len;
-				
-			}
+			
 			this.sound("hit");
 		}
 	}
-
+//draw objects on convas
 	draw()
 	{
 		this._context.fillStyle='#055';
@@ -200,6 +158,20 @@ class Pong{
 		this._context.fillRect(rect.left, rect.top, 
 								rect.size.x, rect.size.y);
 	}
+	drawPoints()
+	{
+		var points=document.getElementById('Points-'+0);
+		points.innerHTML = this.players[0].points;
+
+		var highscore=document.getElementById('HighScore-'+0);
+		highscore.innerHTML = this.players[0].highscore;
+
+		points=document.getElementById('Points-'+1);
+		points.innerHTML = this.players[1].points;
+
+		highscore=document.getElementById('HighScore-'+1);
+		highscore.innerHTML = this.players[1].highscore;
+	}
 	drawScore()
 	{
 		const align = this._canvas.width/3;
@@ -215,7 +187,8 @@ class Pong{
 			});
 		});
 	}
-	//make follow ball at set speed
+
+	//make player 2 follow ball at set speed
 	moveAI()
 	{
 		const ball=this.ball.pos;
@@ -223,6 +196,7 @@ class Pong{
 		
 		if(this.ball.vel.x>0)//moving toward player[1]
 		{
+
 			//console.log(this.players[1].pos.y);
 			if(ball.y>player.y)
 			{
@@ -246,40 +220,70 @@ class Pong{
 				}
 			}
 		}
+		this.checkPlayer(this.players[1]);
+		
 		
 
 	}
-
+	checkPlayer(player){
+		if(player.top<0)
+		{
+			player.pos.y=player.size.y/2;
+		}
+		else if(player.bottom>this._canvas.height)
+		{
+			player.pos.y=this._canvas.height-player.size.y/2;
+		}
+	}
+	movePlayer(player, dir)
+	{
+		var position=player.pos.y+(dir*15);
+		player.move(position);
+		this.checkPlayer(player);
+		this.draw();
+	}
+//define values of ball movement
 	play()
 	{
+		
 		const b=this.ball;
-		if(b.vel.x===0 && b.vel.y===0)//if not moving
+		if(this.isPaused)//if not moving
 		{
 			if(b.pos.x===this._canvas.width/2 && b.pos.y===this._canvas.height/2)//if in center
 			{
 				//move with new values
-				this.velX=200*(Math.random()>.5? 1:-1);
-				this.velY=200*(Math.random() *2-1);
+				this.velX=this.initialSpeed*(Math.random()>.5? 1:-1);
+				this.velY=this.initialSpeed*(Math.random() *2-1);
 				b.vel.x=this.velX;
 				b.vel.y=this.velY;
 				b.vel.len=this.initialSpeed;
 
-			}
+			}/*
 			else
 			{
+
 				//move using current values
 				this.ball.vel.x=this.velX;
 				this.ball.vel.y=this.velY;
-				this.ball.vel.len=this.initialSpeed;
+				//this.ball.vel.len=this.initialSpeed;
 			}
 		}
 		else//is moving, pause
 		{
+			
+			this.velX=this.ball.vel.x;
+			this.velY=this.ball.vel.y;
 			b.vel.x=0;
-			b.vel.y=0;
+			b.vel.y=0;*/
 		}
-	}
+		this.pause();
 
+	}
+	pause()
+	{
+		this.isPaused=!this.isPaused;
+	}
+//clear all values
 	reset()
 	{
 		this.ball.pos.x=this._canvas.width/2;
@@ -290,10 +294,11 @@ class Pong{
 		this.players[1].pos.x=this._canvas.width-40;
 		this.players.forEach(player=>
 		{
+
 			player.reset(this._canvas.height/2) ;
 		});
 	}
-
+//choose difficulty
 	setDifficulty(difficulties)
 	{
 		var difficulty=0;
@@ -310,13 +315,37 @@ class Pong{
 			case 0: this.aiSpeed=1;break;
 			case 1: this.aiSpeed=2;break;
 			case 2: this.aiSpeed=3;break;
-			case 3: this.aiSpeed=4;break;
-			default: this.aiSpeed=10;break;
+			case 3: this.aiSpeed=10;break;
+			default: this.aiSpeed=1;break;
 
 		}
 		
 	}
+	//choose num of players
+	setPlayers(players)
+	{
+		var num=0;
+		for (var i = players.length - 1; i >= 0; i--) 
+		{
+			if(players[i].checked)
+			{
+				num=i;
+				break;
+			}
+		}
+		switch(num)
+		{
+			case 0: this.activeAI=true;//this._canvas.addEventListener('mousemove', );
+				break;
+			case 1: this.activeAI=false;//this._canvas.removeEventListener('mousemove');
+				break;
+			default: this.activeAI=true;//this._canvas.addEventListener('mousemove');
+				break;
 
+		}
+
+	}
+//play sound
 	sound(event)
 	{
 		var index=-1;
@@ -334,79 +363,105 @@ class Pong{
 		}
 		audio.play();
 	}
-
+//initiate
 	start()
 	{
 		
 		requestAnimationFrame(this.callback);
 	}
-
+//move ball, check for collisions
 	simulate(dt)
 	{
-		const vel=this.ball.vel;
-		this.ball.pos.x+=vel.x*dt;
-		this.ball.pos.y+=vel.y*dt;
+		//move ball
+		if(!this.isPaused)
+		{
+			const vel=this.ball.vel;
+			this.ball.pos.x+=vel.x*dt;
+			this.ball.pos.y+=vel.y*dt;
 
-		if(this.activeAI=true)
-		{
-			this.moveAI();
-		}
-		if(this.ball.left<0 || this.ball.right>this._canvas.width)
-		{
-			if(this.ball.left<0){
-				this.sound("miss");
-			}
-			else if(this.ball.right>this._canvas.width)
+			if(this.activeAI===true && !this.isPaused)//animate Ai
 			{
-				this.sound("score");
+				this.moveAI();
 			}
-
-			const playerId=vel.x<0|0;
-			const player =this.players[playerId];
-			player.score++;
-			this.reset();
-			if(player.score>=10)
+			if(this.ball.left<0 || this.ball.right>this._canvas.width)//in either net
 			{
-
-				if(playerId===0)
+				const playerId=vel.x<0|0;
+				const player =this.players[playerId];
+				player.goal(this.aiSpeed);
+				if(player.score<9)
 				{
-					this.sound("win");
-					window.setTimeout(function(){alert('Player One Wins')},1500);
+					if(this.ball.left<0){
 
+						if(playerId===1)
+						{
+							this.sound("score");
+						}
+						else
+						{
+							this.sound("miss");
+						}
+					}
+					else if(this.ball.right>this._canvas.width)
+					{
+						
+						if(playerId===0)
+						{
+							this.sound("score");
+						}
+						else
+						{
+							this.sound("miss");
+						}
+					}
+					player.score++;
+					
 				}
-				else if(playerId===1)
+				else if(player.score>=9)
 				{
-					this.sound("lose");
-					window.setTimeout(function(){alert('Player Two Wins')},1000);
+
+					if(playerId===0)
+					{
+						this.sound("win");
+						window.setTimeout(function(){alert('Player One Wins')},1500);
+						this.players[1].points=0;
+					}
+					else if(playerId===1)
+					{
+						this.sound("lose");
+						window.setTimeout(function(){alert('Player Two Wins')},1000);
+						this.players[0].points=0;
+					}
+					this.players.forEach(player =>{
+						player.reset();
+						player.score=0;
+					});
 				}
-				this.players.forEach(player =>{
-					player.score=0;
-				});
+				this.reset();
+				
 			}
-			
-		}
-
-		if(this.ball.top<0)
-		{
-			this.ball.pos.y=this.ball.bottom;
-				vel.y=-vel.y+1;
-			this.sound("wall");
-			
-		}
-		else if(this.ball.bottom>this._canvas.height)
-		{
-			this.ball.pos.y=this.ball.top;
-			vel.y=-vel.y+1;
-			this.sound("wall");
-		}
 		
-		this.players.forEach(player =>{
-			player.update(dt);
-			this.collide(player, this.ball);
-		});
+			if(this.ball.top<0)//bounce top
+			{
+				this.ball.pos.y=this.ball.bottom;
+					this.ball.vel.y=-this.ball.vel.y+1;
+				this.sound("wall");
+				
+			}
+			else if(this.ball.bottom>this._canvas.height)//bounce bottom
+			{
+				this.ball.pos.y=this.ball.top;
+				vel.y=-vel.y+1;
+				this.sound("wall");
+			}
+			//update players
+			this.players.forEach(player =>{
+				player.update(dt);
+				this.collide(player, this.ball);
+			});
+		}
 		
 	}
-
+//keep time
 	update(dt)
 	{
 		this._accumulator+= dt;
@@ -416,21 +471,30 @@ class Pong{
 			this._accumulator-=this.step;
 		}
 	}
+	Players(players)
+	{
+		this.vs=players;
+	}
+
+
 	
 }
 const canvas=document.getElementById('pong');
 canvas.style.position="center";
 const pong=new Pong(canvas);
 const difficulties=document.getElementsByClassName('difficulty');
+const players=document.getElementsByClassName('vs');
+pong.Players(players);
 canvas.addEventListener('mousemove',event =>
 {
 	const scale=event.offsetY/event.target.getBoundingClientRect().height;
-	pong.players[0].pos.y=canvas.height*scale;
+	pong.players[0].move(canvas.height*scale);
 });
 canvas.addEventListener('click',event =>
 {
 	this.difficulties=document.getElementsByClassName('difficulty');
 	pong.setDifficulty(difficulties);
+	
 	pong.play();
 
 });
@@ -440,10 +504,20 @@ function checkKey(e) {
 
     e = e || window.event;
 
-    if (e.keyCode == '27') {
+    if (e.keyCode == '27') //ESC key
+    {
+
+		pong.setPlayers(players);
+		pong.setDifficulty(difficulties);
         pong.reset();
     }
+    else if(e.keyCode=='13')
+    {
+    	pong.play();
+    }
+    else {pong.keyCommand(e)}
 
 }
+
 pong.start();
 

@@ -1,10 +1,8 @@
 <HTML>
 <HEAD>
-<TITLE>Play Ping Pong</TITLE>
+<TITLE>Play Pong</TITLE>
 <style>
 body {
-	display: all;
-	align-items: center;
 	background: #202020;
 	margin: 0;
 	color: white;
@@ -14,24 +12,71 @@ canvas {
 	border-left: none;
 	border-right: none;
 	image-rendering: pixelated;
-	height: 90%;
+	height: 85%;
 	width: 100%;
 	margin: 0 auto;
+	margin-top: 10;
 	cursor: none;
+	position: fixed;
 }
+.topnav {
+    background-color: #333;
+    overflow: hidden;
+}
+
+/* Style the links inside the navigation bar */
+.topnav li {
+    float: left;
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+  
+    text-decoration: none;
+    font-size: 17px;
+}
+.points
+{
+	background-color: #444;
+    overflow: hidden;
+    float: left;
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+  
+    text-decoration: none;
+    font-size: 17px;
+}
+
+/*
 ul.navigation{
-	display: all;
   	margin: 0;
-  	align-items: flex;
+  	position: absolute;
+  	top: 5%;
+  	left:150px;
+  	align-items: center;
  	list-style-type: none;
-}
+}*/
 li.links{
 	color: white;
   transition: all .1s ease-in;
   font-family: 'Roboto', sans-serif;
-  padding: .8em;
   display: inline-block;
-  margin-left: 2%;
+  margin-left: 10px;
+}
+span{
+	font-size: 20pt;
+	color: yellow;
+	padding-left: 10px;
+	padding-right: 10px;
+	top: 100px;
+}
+span.left{
+	position: fixed;
+	left: 10px;
+}
+span.right{
+	position: fixed;
+	right: 10px;
 }
 </style>
 <audio >
@@ -43,22 +88,28 @@ li.links{
 	<source src="sounds/flyby-Conor-1500306612.wav" type="audio/wav" id="lose">
   Your browser does not support the audio tag.
 </audio>
+	<script type="text/javascript" src='Cookie.js'></script>
+	<script type="text/javascript" src='Objects.js'></script>
 </HEAD>
 <BODY BGCOLOR="FFFFFF">
-<ul class="navigation">
-<<<<<<< HEAD
-<li class="links" id="easy"><input type="radio" class="difficulty" name="difficulty" value="easy" checked="checked" />Easy</li>
-<li class="links" id="medium"><input type="radio" class="difficulty" name="difficulty" value="medium" />Medium</li>
-<li class="links" id="hard"><input type="radio" class="difficulty" name="difficulty" value="hard" />Hard</li>
-<li class="links" id="impossible"><input type="radio" class="difficulty" name="difficulty" value="impossible" />Impossible</li></ul>
+<div class="topnav"><ul class="navigation">
+	<li class="links" id="easy"><input type="radio" class="difficulty" name="difficulty" value="easy" checked="checked" />Easy</li>
+	<li class="links" id="medium"><input type="radio" class="difficulty" name="difficulty" value="medium" />Medium</li>
+	<li class="links" id="hard"><input type="radio" class="difficulty" name="difficulty" value="hard" />Hard</li>
+	<li class="links" id="impossible"><input type="radio" class="difficulty" name="difficulty" value="impossible" />Impossible</li></ul>
+</div>
+<div class="topnav">
+	<ul class="navigation">
+	<li class="links" id="1player"><input type="radio" class="vs" name="vs" value="1player" checked="checked" />1 Player</li>
+	<li class="links" id="2player"><input type="radio" class="vs" name="vs" value="2player" />2 Player</li>
+	</ul>
+</div>
+
 <canvas id='pong' width='1000' height='400' /></canvas>
-=======
-<li class="links" id="easy"><input type="radio" class="difficulty" name="difficulty" value="easy" checked="checked" >Easy</li>
-<li class="links" id="medium"><input type="radio" class="difficulty" name="difficulty" value="medium" >Medium</li>
-<li class="links" id="hard"><input type="radio" class="difficulty" name="difficulty" value="hard" >Hard</li>
-<li class="links" id="impossible"><input type="radio" class="difficulty" name="difficulty" value="impossible" >Impossible</li></ul>
-<canvas id='pong' width='1000' height='400' ></canvas>
->>>>>>> origin/master
+<div class="points">
+<span class="left row1">HighScore:<span id="HighScore-0">0</span>&nbsp Points:<span id="Points-0">0</span></span>
+<span class="right row2">  <span id="Points-1">0</span>:Points&nbsp<span id="HighScore-1">0</span>:HighScore</span>
+</div>
 <script type="text/javascript" src='pingpong.js'></script>
 
 
