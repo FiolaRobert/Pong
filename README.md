@@ -1,7 +1,7 @@
 This is a web based javascript game based on the classic Pong game.<br>
 Open the site here: <a href="https://fiolarobert.github.io/Pong/">Pong</a><br>
 <img src="https://github.com/FiolaRobert/Pong/blob/master/PongScreenshot.png"></img>
-inspired by Codetrain.
+inspired by Codetrain & methmethmethod.
 
 Future updates include:
 <ol><li>list of high scores ranking of all time for each player</li>
