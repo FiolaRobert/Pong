@@ -53,7 +53,7 @@ class Ball extends Rect
 }
 class Player extends Rect
 {
-	constructor()
+	constructor(ai)
 	{
 		super(15,50);
 		this.vel = new Vec;
@@ -63,7 +63,12 @@ class Player extends Rect
 		this._lastPos=new Vec;
 		this.highscore=0;
 		this.cookie=new Cookie();
-		this.loadHighScore();
+		this.isAI=ai;
+		if(!this.isAI)
+		{
+			this.loadHighScore();
+		}
+		
 		
 	}
 	update(dt)
@@ -85,17 +90,26 @@ class Player extends Rect
 	{
 		//console.log("newHighScore");
 		this.highscore=score;
-		this.cookie.setCookie("HighScore", this.highscore, 365);
+		if(!this.isAI)
+		{
+			//console.log("new Cookie: Highscore - "+this.highscore);
+			this.cookie.setCookie("HighScore", this.highscore, 365);
+		}
 	}
 	loadHighScore()
 	{
-		//console.log("loadHighScore");
-		var score = this.cookie.getCookie("HighScore");
-	    if (score != "") {
-	        this.highscore=score;
-	    } else {
-	        this.highscore=0;
-	    }
+		if(!this.isAI)
+		{
+			//console.log("loadHighScore");
+			var score = this.cookie.getCookie("HighScore");
+		    if (score != "") {
+		        this.highscore=score;
+		    } else {
+		        this.highscore=0;
+		    }
+		}else {
+			this.highscore=0;
+		}
 	}
 	
 	addPoints(point)

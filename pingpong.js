@@ -12,6 +12,8 @@ class Pong{
 		this.difficulty=0;
 		this.vs;
 		this.isPaused=true;
+		this.p1move=0;
+		this.p2move=0;
 
 		this._accumulator=0;
 		this.step=1/120;
@@ -20,8 +22,8 @@ class Pong{
 		
 
 		this.players=[
-		new Player,
-		new Player,
+		new Player(false),
+		new Player(true),
 		];
 		this.drawPoints();
 
@@ -69,19 +71,18 @@ class Pong{
 	
 	}
 
-	keyCommand(event)
+	keyPress(event)
 	{
 		if(event.keyCode=='87')//W key
 		{
+			this.p1move=-5;
 			
-			this.movePlayer(this.players[0], -1);
 			
 
 		}
 		else if(event.keyCode=='83')//S key
 		{
-			
-			this.movePlayer(this.players[0], 1);
+			this.p1move=5;
 			
 		}
 
@@ -89,20 +90,45 @@ class Pong{
 		{
 			if(event.keyCode=='38')//up key
 			{
-				
-				this.movePlayer(this.players[1], -1);
+				this.p2move=-5;
 			
 			}else if(event.keyCode=='40')//down key
 			{
-				
-				this.movePlayer(this.players[1], 1);
+				this.p2move=5;
 				
 			}
 		}
+
 		
 		
 	}
-	
+	keyRelease(event)
+	{
+		if(event.keyCode=='87')//W key
+		{
+			this.p1move=0;
+			
+
+		}
+		else if(event.keyCode=='83')//S key
+		{
+			this.p1move=0;
+			
+		}
+
+		if(!this.activeAI)//2 player mode
+		{
+			if(event.keyCode=='38')//up key
+			{
+				this.p2move=0;
+			
+			}else if(event.keyCode=='40')//down key
+			{
+				this.p2move=0;
+				
+			}
+		}
+	}
 
 	
 //bounce when ball hits players
@@ -117,25 +143,34 @@ class Pong{
 			//console.log(player.vel.y+", "+ this.velX+", "+ this.velY)
 			player.hit(this.aiSpeed);
 			//has glitch of shooting vertically and getting stuck
-				ball.pos.x-=ball.vel.x*this.step;
-				this.velX = -ball.vel.x *1.05;//+ player.vel.y*0.2
-				ball.vel.x=this.velX;
-				var len=ball.vel.len;
-				this.velY=this.ball.vel.y+player.vel.y*0.5;
-				ball.vel.y=this.velY;
-				ball.vel.len=len;
+			var angle=ball.pos.y-player.pos.y;
+			//X
+			ball.pos.x-=ball.vel.x*this.step;
+			this.velX = -ball.vel.x *1.05;//progressively faster
+			ball.vel.x=this.velX;
+			//Y
+			//console.log("before:"+this.velY);
+			if(angle!=0)
+			{
+				//console.log(player.vel.y/2);
+				this.velY=angle*3 + player.vel.y/2;
+			}
+			//console.log("angle:"+angle);
+			//console.log("after:"+this.velY);
 
-				//minimum ball speed
-				if(ball.vel.x>0 && ball.vel.x<this.initialSpeed)
-				{
-					this.velX=this.initialSpeed;
-					ball.vel.x=this.velX;
-				}
-				else if(ball.vel.x<0 && ball.vel.x>-this.initialSpeed)
-				{
-					this.velX=-this.initialSpeed;
-					ball.vel.x=this.velX;
-				}
+			ball.vel.y=this.velY;
+
+			//minimum ball speed
+			if(ball.vel.x>0 && ball.vel.x<this.initialSpeed)
+			{
+				this.velX=this.initialSpeed;
+				ball.vel.x=this.velX;
+			}
+			else if(ball.vel.x<0 && ball.vel.x>-this.initialSpeed)
+			{
+				this.velX=-this.initialSpeed;
+				ball.vel.x=this.velX;
+			}
 			
 			this.sound("hit");
 		}
@@ -151,6 +186,21 @@ class Pong{
 			this.drawRect(player);
 		});
 		this.drawScore();
+		if(this.isPaused)
+		{
+			this.drawPaused();
+		}
+	}
+	drawPaused(){
+		var width=100;
+		var height=20;
+		this._context.fillStyle="#000";
+		this._context.fillRect(this._canvas.width/2-width/2, this._canvas.height/2-height/2, width,height)
+		this._context.fillStyle="#fff";
+		//this._context.font=$(this).css("50")+ " Arial"; 
+		//this._context.strokeText("PAUSED", this._canvas.width/2, this._canvas.height/2);
+		this._context.fillText("PAUSED",this._canvas.width/2, this._canvas.height/2);
+		 this._context.textAlign = "center";
 	}
 	drawRect(rect)
 	{
@@ -235,9 +285,10 @@ class Pong{
 			player.pos.y=this._canvas.height-player.size.y/2;
 		}
 	}
+	//
 	movePlayer(player, dir)
 	{
-		var position=player.pos.y+(dir*15);
+		var position=player.pos.y+dir;
 		player.move(position);
 		this.checkPlayer(player);
 		this.draw();
@@ -258,29 +309,15 @@ class Pong{
 				b.vel.y=this.velY;
 				b.vel.len=this.initialSpeed;
 
-			}/*
-			else
-			{
-
-				//move using current values
-				this.ball.vel.x=this.velX;
-				this.ball.vel.y=this.velY;
-				//this.ball.vel.len=this.initialSpeed;
 			}
 		}
-		else//is moving, pause
-		{
-			
-			this.velX=this.ball.vel.x;
-			this.velY=this.ball.vel.y;
-			b.vel.x=0;
-			b.vel.y=0;*/
-		}
-		this.pause();
+		this.pause();//change pause value
+
 
 	}
 	pause()
 	{
+
 		this.isPaused=!this.isPaused;
 	}
 //clear all values
@@ -297,6 +334,7 @@ class Pong{
 
 			player.reset(this._canvas.height/2) ;
 		});
+		this.isPaused=true;
 	}
 //choose difficulty
 	setDifficulty(difficulties)
@@ -443,21 +481,35 @@ class Pong{
 			if(this.ball.top<0)//bounce top
 			{
 				this.ball.pos.y=this.ball.bottom;
-					this.ball.vel.y=-this.ball.vel.y+1;
+				this.velY*=-1;
+					this.ball.vel.y=this.velY;
 				this.sound("wall");
 				
 			}
 			else if(this.ball.bottom>this._canvas.height)//bounce bottom
 			{
 				this.ball.pos.y=this.ball.top;
-				vel.y=-vel.y+1;
+				this.velY*=-1;
+					this.ball.vel.y=this.velY;
 				this.sound("wall");
 			}
 			//update players
 			this.players.forEach(player =>{
 				player.update(dt);
+
 				this.collide(player, this.ball);
+
 			});
+			//console.log(this.p1move+":"+this.players[0].vel.y);
+			if(this.p1move!=0)
+			{
+				this.movePlayer(this.players[0], this.p1move);
+			}
+			//console.log(this.p2move+":"+this.players[1].vel.y);
+			if(this.p2move!=0)
+			{
+				this.movePlayer(this.players[1], this.p2move);
+			}
 		}
 		
 	}
@@ -498,12 +550,13 @@ canvas.addEventListener('click',event =>
 	pong.play();
 
 });
-document.onkeydown = checkKey;
 
+document.onkeydown = checkKey;
+document.onkeyup = checkRelease;
 function checkKey(e) {
 
     e = e || window.event;
-
+    //console.log(e);
     if (e.keyCode == '27') //ESC key
     {
 
@@ -515,9 +568,19 @@ function checkKey(e) {
     {
     	pong.play();
     }
-    else {pong.keyCommand(e)}
+    else {pong.keyPress(e)}
 
 }
+function checkRelease(e)
+{
+	e=e || window.event;
+	//console.log(e);
+	if(e.keyCode=='87' || e.keyCode=='83' || e.keyCode=='38' || e.keyCode=='40')
+		{pong.keyRelease(e);}
+}
+
+
+
 
 pong.start();
 

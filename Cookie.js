@@ -8,7 +8,7 @@ class Cookie
 	{
 		//console.log("setCookie: "+cname+","+cvalue+","+exdays);
 		var d = new Date();
-	    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+	    d.setTime(d.getTime());
 	    var expires = "expires="+ d.toUTCString();
 	    var cookieStr=cname+"="+cvalue+";"+expires+";path=/";
 	    //console.log(cookieStr);
