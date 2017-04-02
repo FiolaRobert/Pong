@@ -11,7 +11,7 @@ Future updates include:
 
 Controls:
 <ul>
-<li>control paddle</li>
+<li>Mouse-control paddle</li>
 <li>W-Player 1 move up</li>
 <li>S-Player 1 move down</li>
 <li>UpArrow-Player 2 move up</li>
