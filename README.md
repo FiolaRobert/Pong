@@ -4,16 +4,18 @@ Open the site here: <a href="https://fiolarobert.github.io/Pong/">Pong</a><br>
 inspired by Codetrain.
 
 Future updates include:
-<ol><li>saving highscore in cookie</li>
-<li>list of high scores ranking of all time</li>
+<ol><li>list of high scores ranking of all time for each player</li>
 <li>multiplayer online connectivity</li>
+<li>splash screen on start</li>
 <li>update graphics</li></ol>
 
 Controls:
-<ul><li>W-Player 1 move up</li>
-<li>S-Player 1 move up</li>
+<ul>
+<li>control paddle</li>
+<li>W-Player 1 move up</li>
+<li>S-Player 1 move down</li>
 <li>UpArrow-Player 2 move up</li>
-<li>DownArrow-Player 2 move up</li>
+<li>DownArrow-Player 2 move down</li>
 <li>Esc-reset ball position</li>
 <li>Enter-Pause/Play</li>
 <li>when selecting a new difficulty or number of players you must press ESC to reset</li></ul>
