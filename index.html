@@ -1,5 +1,10 @@
 <HTML>
 <HEAD>
+<meta charset="UTF-8">
+  <meta name="description" content="Pong Home Page">
+  <meta name="keywords" content="Pong,Classic,Play,Game,Atari,Ping Pong,Tennis">
+  <meta name="author" content="Robert Fiola">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <TITLE>Play Pong</TITLE>
 <style>
 body {
@@ -34,35 +39,6 @@ canvas {
     text-decoration: none;
     font-size: 17px;
 }
-.points
-{
-	background-color: #444;
-    overflow: hidden;
-    float: left;
-    display: block;
-    color: #f2f2f2;
-    text-align: center;
-  
-    text-decoration: none;
-    font-size: 17px;
-    -webkit-user-select: none;
--khtml-user-select: none;
--moz-user-select: none;
--ms-user-select: none;
--o-user-select: none;
-user-select: none;
-cursor: none;
-}
-
-/*
-ul.navigation{
-  	margin: 0;
-  	position: absolute;
-  	top: 5%;
-  	left:150px;
-  	align-items: center;
- 	list-style-type: none;
-}*/
 li.links{
 	color: white;
   transition: all .1s ease-in;
@@ -70,55 +46,89 @@ li.links{
   display: inline-block;
   margin-left: 10px;
 }
-span{
-	font-size: 20pt;
-	color: yellow;
-	padding-left: 10px;
-	padding-right: 10px;
-	top: 100px;
+div.title
+{
+	font-family: 'Roboto', sans-serif;
+	font-size: 200;
+	text-align:center;
 }
-span.left{
-	position: fixed;
-	left: 10px;
-}
-span.right{
-	position: fixed;
-	right: 10px;
+a.button {
+    -webkit-appearance: button;
+    -moz-appearance: button;
+    appearance: button;
+
+    text-decoration: none;
+    text-align: center;
+    vertical-align: middle;
+    color: initial;
+    height: 100;
+    width: 100;
+
 }
 </style>
 <audio >
-  <source src="sounds/ping_pong_8bit_plop.wav" type="audio/wav" id="miss">
-  <source src="sounds/ping_pong_8bit_peeeeeep.wav" type="audio/wav" id="hit">
   <source src="sounds/ping_pong_8bit_beeep.wav" type="audio/wav" id="wall">
-  <source src="sounds/Cheering 3-SoundBible.com-1680253418.wav" type="audio/wav" id="win">
-   <source src="sounds/Air Plane Ding-SoundBible.com-496729130.wav" type="audio/wav" id="score">
-	<source src="sounds/flyby-Conor-1500306612.wav" type="audio/wav" id="lose">
   Your browser does not support the audio tag.
 </audio>
-	<script type="text/javascript" src='Cookie.js'></script>
-	<script type="text/javascript" src='Objects.js'></script>
+
+
+
 </HEAD>
+
 <BODY BGCOLOR="FFFFFF">
-<div class="topnav"><ul class="navigation">
-	<li class="links" id="easy"><input type="radio" class="difficulty" name="difficulty" value="easy" checked="checked" />Easy</li>
-	<li class="links" id="medium"><input type="radio" class="difficulty" name="difficulty" value="medium" />Medium</li>
-	<li class="links" id="hard"><input type="radio" class="difficulty" name="difficulty" value="hard" />Hard</li>
-	<li class="links" id="impossible"><input type="radio" class="difficulty" name="difficulty" value="impossible" />Impossible</li></ul>
-</div>
+
 <div class="topnav">
-	<ul class="navigation">
+	<ul class="players">
 	<li class="links" id="1player"><input type="radio" class="vs" name="vs" value="1player" checked="checked" />1 Player</li>
 	<li class="links" id="2player"><input type="radio" class="vs" name="vs" value="2player" />2 Player</li>
 	</ul>
 </div>
-
-<canvas id='pong' width='1000' height='400' /></canvas>
-<div class="points">
-<span class="left row1">HighScore:<span id="HighScore-0">0</span>&nbsp Points:<span id="Points-0">0</span></span>
-<span class="right row2">  <span id="Points-1">0</span>:Points&nbsp<span id="HighScore-1">0</span>:HighScore</span>
+<div class="topnav">
+	<ul class="difficulty">
+	<li class="links" id="easy"><input type="radio" class="difficulty" name="difficulty" value="easy" checked="checked" />Easy</li>
+	<li class="links" id="medium"><input type="radio" class="difficulty" name="difficulty" value="medium" />Medium</li>
+	<li class="links" id="hard"><input type="radio" class="difficulty" name="difficulty" value="hard" />Hard</li>
+	<li class="links" id="Unlimitted"><input type="radio" class="difficulty" name="difficulty" value="Unlimitted" />Unlimitted</li>
+	</ul>
 </div>
-<script type="text/javascript" src='pingpong.js'></script>
+
+	
 
 
+<div class="title">PLAY PONG</div>
+<button onclick="play()" class="button">PLAY PONG</button>
+<script>
+	function play()
+	{
+		const players=document.getElementsByClassName('vs');
+		
+		if(players[1].checked)//2player
+		{
+			var link=parseInt(Math.random()*10000);
+			window.open("Pong.html?host="+link, "_self");
+			//server creates new host -tracks players
+			//only allows 2 players on an individual host
+			//starts when 2 players connect on a host
+			//find current players
+			//connect to lowest ping
+		}
+		else//1player
+		{
+			const difficulties=document.getElementsByClassName('difficulty');
+			var difficulty=0;
+			for (var i = difficulties.length - 1; i >= 0; i--) 
+			{
+				if(difficulties[i].checked)
+				{
+					difficulty=i;
+					break;
+				}
+			}
+			window.open("Pong.html?difficulty="+difficulty, "_self");
+		}
+		
+	}
+
+</script>
 </BODY>
 </HTML>

@@ -1,6 +1,10 @@
 class Pong{
 	constructor(canvas)
 	{
+		//this.pongManager=new PongManager(document);
+		//this.connectionManager=new ConnectionManager(pongManager);
+		//this.connectionManager.connect('ws://localhost:9000');
+
 		this._canvas=canvas;
 		this._context=canvas.getContext('2d');
 		
@@ -9,7 +13,6 @@ class Pong{
 		this.velY=0;
 		this.aiSpeed=1;
 		this.activeAI=true;
-		this.difficulty=0;
 		this.vs;
 		this.isPaused=true;
 		this.p1move=0;
@@ -18,15 +21,15 @@ class Pong{
 		this._accumulator=0;
 		this.step=1/120;
 
-		this.ball=new Ball;
-		
-
+		//this.ball=this.pongManager.ball;
+		this.ball=new Ball();
+		//this.players=this.pongManager.players;
 		this.players=[
 		new Player(false),
-		new Player(true),
-		];
+		new Player(true)];
+		
 		this.drawPoints();
-
+		this.setDifficulty();
 		let lastTime;
 		
 		this.callback =(millis)=> {
@@ -60,9 +63,12 @@ class Pong{
 			context.fillStyle='#fff';
 			str.split('').forEach((fill, i) => {
 				if(fill==='1'){
-					context.fillRect((i%3)*this.CHAR_PIXEL, (i/3|0)*this.CHAR_PIXEL,
-						this.CHAR_PIXEL,
-						this.CHAR_PIXEL);
+					
+					context.beginPath();
+					context.arc(this.CHAR_PIXEL/2+(i%3)*this.CHAR_PIXEL, this.CHAR_PIXEL/2+(i/3|0)*this.CHAR_PIXEL,this.CHAR_PIXEL/3,0,2*Math.PI);
+					context.fillStyle="#fff";
+					context.fill();
+					
 				}
 			});
 			return canvas;
@@ -181,9 +187,9 @@ class Pong{
 		this._context.fillStyle='#055';
 		this._context.fillRect(0,0, 
 			this._canvas.width, this._canvas.height);
-		this.drawRect(this.ball);
+		this.drawCirc(this.ball);
 		this.players.forEach(player=>{
-			this.drawRect(player);
+			this.drawPaddle(player);
 		});
 		this.drawScore();
 		if(this.isPaused)
@@ -197,16 +203,27 @@ class Pong{
 		this._context.fillStyle="#000";
 		this._context.fillRect(this._canvas.width/2-width/2, this._canvas.height/2-height/2, width,height)
 		this._context.fillStyle="#fff";
-		//this._context.font=$(this).css("50")+ " Arial"; 
-		//this._context.strokeText("PAUSED", this._canvas.width/2, this._canvas.height/2);
 		this._context.fillText("PAUSED",this._canvas.width/2, this._canvas.height/2);
 		 this._context.textAlign = "center";
 	}
 	drawRect(rect)
 	{
-		this._context.fillStyle='#fff';
+		
 		this._context.fillRect(rect.left, rect.top, 
 								rect.size.x, rect.size.y);
+	}
+	drawPaddle(player)
+	{
+		this.drawRect(player);
+	}
+	drawCirc(circ)
+	{
+		var ctx=this._context;
+		
+		ctx.beginPath();
+		ctx.arc(circ.pos.x,circ.pos.y,circ.size.x/2,0,2*Math.PI);
+		this._context.fillStyle="#fff";
+		ctx.fill();
 	}
 	drawPoints()
 	{
@@ -337,50 +354,49 @@ class Pong{
 		this.isPaused=true;
 	}
 //choose difficulty
-	setDifficulty(difficulties)
+	setDifficulty()
 	{
-		var difficulty=0;
-		for (var i = difficulties.length - 1; i >= 0; i--) 
-		{
-			if(difficulties[i].checked)
+		const url=parent.document.URL;
+		const keys=url.substring(url.indexOf('?')+1, url.length).split('=');
+		if(keys[0]=='difficulty'){
+			var difficulty=keys[1];
+			console.log('difficulty:'+difficulty);
+			
+			switch(parseInt(difficulty))
 			{
-				difficulty=i;
-				break;
-			}
-		}
-		switch(difficulty)
-		{
-			case 0: this.aiSpeed=1;break;
-			case 1: this.aiSpeed=2;break;
-			case 2: this.aiSpeed=3;break;
-			case 3: this.aiSpeed=10;break;
-			default: this.aiSpeed=1;break;
+				case 0: this.aiSpeed=1;break;
+				case 1: this.aiSpeed=2;break;
+				case 2: this.aiSpeed=3;break;
+				case 3: this.aiSpeed=10;break;
+				default: this.aiSpeed=1;break;
 
+			}
 		}
 		
 	}
 	//choose num of players
 	setPlayers(players)
 	{
-		var num=0;
-		for (var i = players.length - 1; i >= 0; i--) 
-		{
-			if(players[i].checked)
-			{
-				num=i;
-				break;
-			}
-		}
-		switch(num)
-		{
-			case 0: this.activeAI=true;//this._canvas.addEventListener('mousemove', );
-				break;
-			case 1: this.activeAI=false;//this._canvas.removeEventListener('mousemove');
-				break;
-			default: this.activeAI=true;//this._canvas.addEventListener('mousemove');
-				break;
+		var player=0;
+		const url=parent.document.URL;
+		const keys=url.substring(url.indexOf('?')+1, url.length).split('=');
 
+		if(keys[0]=='host'){//2player
+			player=keys[1];
+			console.log('host:'+player);
+			this.activeAI=false;
+
+			//disable until someone else joins
 		}
+		else //1player
+		{
+			this.activeAI=true;
+			
+			
+		}
+		//this.pongManager.connectPlayer(new Player(false));
+		//this.pongManager.connectPlayer(new Player(activeAI));
+
 
 	}
 //play sound
@@ -527,16 +543,15 @@ class Pong{
 	{
 		this.vs=players;
 	}
-
-
-	
 }
 const canvas=document.getElementById('pong');
-canvas.style.position="center";
-const pong=new Pong(canvas);
 const difficulties=document.getElementsByClassName('difficulty');
 const players=document.getElementsByClassName('vs');
+canvas.style.position="center";
+const pong=new Pong(canvas);
+
 pong.Players(players);
+pong.setPlayers(players);
 canvas.addEventListener('mousemove',event =>
 {
 	const scale=event.offsetY/event.target.getBoundingClientRect().height;
@@ -544,11 +559,7 @@ canvas.addEventListener('mousemove',event =>
 });
 canvas.addEventListener('click',event =>
 {
-	this.difficulties=document.getElementsByClassName('difficulty');
-	pong.setDifficulty(difficulties);
-	
 	pong.play();
-
 });
 
 document.onkeydown = checkKey;
@@ -560,8 +571,7 @@ function checkKey(e) {
     if (e.keyCode == '27') //ESC key
     {
 
-		pong.setPlayers(players);
-		pong.setDifficulty(difficulties);
+		
         pong.reset();
     }
     else if(e.keyCode=='13')
@@ -578,9 +588,5 @@ function checkRelease(e)
 	if(e.keyCode=='87' || e.keyCode=='83' || e.keyCode=='38' || e.keyCode=='40')
 		{pong.keyRelease(e);}
 }
-
-
-
-
 pong.start();
 

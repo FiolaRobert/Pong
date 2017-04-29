@@ -18,8 +18,7 @@ class Vec
 	 }
 
 }
-class Rect 
-{
+class Shape {
 	constructor(w,h)
 	{
 		this.pos=new Vec;
@@ -43,7 +42,7 @@ class Rect
 		return this.pos.y + this. size.y/2;
 	}
 }
-class Ball extends Rect 
+class Ball extends Shape 
 {
 	constructor()
 	{
@@ -51,7 +50,7 @@ class Ball extends Rect
 		this.vel=new Vec;
 	}
 }
-class Player extends Rect
+class Player extends Shape
 {
 	constructor(ai)
 	{
